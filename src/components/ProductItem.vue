@@ -14,41 +14,49 @@
       {{ product.price }} ₽
     </span>
 
-    <ul class="colors colors--black">
+    <ul class="colors colors--black" v-if="product.colorsId">
       <li class="colors__item">
-        <label class="colors__label" for="color-1">
+        <label class="colors__label" for="#73B6EA">
           <input class="colors__radio sr-only"
-          type="radio" name="color-1" value="#73B6EA" checked="">
+          type="radio" id="#73B6EA" value="#73B6EA"  v-model="color">
           <span class="colors__value" style="background-color: #73B6EA;">
           </span>
         </label>
       </li>
-      <li class="colors__item">
-        <label class="colors__label" for="color-1">
+      <!-- <li class="colors__item">
+        <label class="colors__label" for="#8BE000">
           <input class="colors__radio sr-only"
-          type="radio" name="color-1" value="#8BE000">
+          type="radio" id="#8BE000" value="#8BE000" v-model="color">
           <span class="colors__value" style="background-color: #8BE000;">
           </span>
         </label>
       </li>
       <li class="colors__item">
-        <label class="colors__label" for="color-1">
+        <label class="colors__label" for="#222">
           <input class="colors__radio sr-only"
-          type="radio" name="color-1" value="#222">
+          type="radio" id="#222" value="#222" v-model="color">
           <span class="colors__value" style="background-color: #222;">
           </span>
         </label>
-      </li>
+      </li> -->
     </ul>
 </li>
 </template>
 
 <script>
+// import colors from '@/data/colors';
+
 export default {
   props: ['product'],
+  data() {
+    return {
+      color: '#73B6EA',
+    };
+  },
+  computed: {
+    // filterColors() {
+    //   return colors.filter()
+    // },
+  },
 };
 </script>
-
-<style>
-
-</style>
