@@ -13,12 +13,17 @@
 
     <ProductFilter :categoryId.sync="filterCategoryId"
                    :price-to.sync="filterPriceTo"
-                   :price-from.sync="filterPriceFrom" />
+                   :price-from.sync="filterPriceFrom"
+                   :colorId.sync="filterColorId" />
 
-    <section class="catalog">
+    <section class="catalog" v-if="filteredProducts.length">
       <ProductList :products="products" />
       <Pagination v-model="page" :per-page="productsPerPage" :count="countProducts" />
-  </section>
+    </section>
+
+    <section class="catalog" v-else>
+      <h2>Товаров по выбранному фильтру не нашлось</h2>
+    </section>
   </div>
 </main>
 
@@ -38,6 +43,8 @@ export default {
       filterPriceFrom: 0,
       filterPriceTo: 0,
       filterCategoryId: 0,
+      filterColorId: 0,
+
       page: 1,
       productsPerPage: 3,
     };
@@ -59,6 +66,11 @@ export default {
       if (this.filterCategoryId) {
         filteredProducts = filteredProducts
           .filter((product) => product.categoryId === this.filterCategoryId);
+      }
+
+      if (this.filterColorId) {
+        filteredProducts = filteredProducts
+          .filter((product) => product.colorsId.some((color) => color === this.filterColorId));
       }
 
       return filteredProducts;
