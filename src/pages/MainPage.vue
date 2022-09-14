@@ -5,7 +5,7 @@
         Каталог
       </h1>
       <span class="content__info">
-        {{countProducts}} товара
+        {{ getRightWord(countProducts, ['товар', 'товара','товаров']) }}
       </span>
     </div>
 
@@ -34,6 +34,7 @@ import products from '@/data/products';
 import ProductList from '@/components/ProductList.vue';
 import Pagination from '@/components/BasePagination.vue';
 import ProductFilter from '@/components/ProductFilter.vue';
+import getRightWord from '@/helpers/getRightWord';
 
 export default {
   components: { ProductList, Pagination, ProductFilter },
@@ -47,6 +48,9 @@ export default {
       page: 1,
       productsPerPage: 3,
     };
+  },
+  methods: {
+    getRightWord,
   },
   computed: {
     filteredProducts() {

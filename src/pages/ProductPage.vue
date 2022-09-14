@@ -3,16 +3,14 @@
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="index.html"
-             @click.prevent="goToPage('main', {})">
+          <router-link class="breadcrumbs__link" :to="{name: 'main'}">
             Каталог
-          </a>
+          </router-link>
         </li>
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="#"
-             @click.prevent="goToPage('main', {})">
+          <router-link class="breadcrumbs__link" :to="{name: 'main'}">
             {{categories.title}}
-          </a>
+          </router-link>
         </li>
         <li class="breadcrumbs__item">
           <a class="breadcrumbs__link">
@@ -62,7 +60,7 @@
           {{product.title}}
         </h2>
         <div class="item__form">
-          <form class="form" action="#" method="POST">
+          <form class="form" action="#" method="POST" @submit.prevent="addToCart">
             <b class="item__price">
               {{product.price | numberFormat }} ₽
             </b>
@@ -130,7 +128,8 @@
 
             <div class="item__row">
               <div class="form__counter">
-                <button type="button" aria-label="Убрать один товар">
+                <button type="button" aria-label="Убрать один товар"
+                        @click="decrementProductAmount">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-minus"></use>
                   </svg>
@@ -138,10 +137,11 @@
 
                 <label for="count">
                   <span style="display: none;">Количество товаров</span>
-                  <input type="text" value="1" name="count">
+                  <input type="text" v-model.number="productAmount" name="count">
                 </label>
 
-                <button type="button" aria-label="Добавить один товар">
+                <button type="button" aria-label="Добавить один товар"
+                        @click="incrementProductAmount">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-plus"></use>
                   </svg>
@@ -235,9 +235,14 @@ import numberFormat from '@/helpers/numberFormat';
 export default {
   props: ['pageParams'],
   filters: { numberFormat },
+  data() {
+    return {
+      productAmount: 1,
+    };
+  },
   computed: {
     product() {
-      return products.find((product) => product.id === this.pageParams.id);
+      return products.find((product) => product.id === +this.$route.params.id);
     },
     categories() {
       return categories.find((category) => category.id === this.product.categoryId);
@@ -245,6 +250,20 @@ export default {
   },
   methods: {
     goToPage,
+    addToCart() {
+      this.$store.commit(
+        'addProductToCard',
+        { productId: this.product.id, amount: this.productAmount },
+      );
+    },
+    incrementProductAmount() {
+      this.productAmount += 1;
+    },
+    decrementProductAmount() {
+      if (this.productAmount > 1) {
+        this.productAmount -= 1;
+      }
+    },
   },
 };
 </script>
