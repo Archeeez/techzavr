@@ -16,14 +16,14 @@
                      :price-from.sync="filterPriceFrom"
                      :colorId.sync="filterColorId" />
 
-      <section class="catalog" v-if="filteredProducts.length">
+      <section class="catalog">
         <ProductList :products="products" />
         <Pagination v-model="page" :per-page="productsPerPage" :count="countProducts" />
       </section>
 
-      <section class="catalog" v-else>
+      <!-- <section class="catalog" v-else>
         <h2>Товаров по выбранному фильтру не нашлось</h2>
-      </section>
+      </section> -->
     </div>
   </main>
 
@@ -35,6 +35,7 @@ import ProductList from '@/components/ProductList.vue';
 import Pagination from '@/components/BasePagination.vue';
 import ProductFilter from '@/components/ProductFilter.vue';
 import getRightWord from '@/helpers/getRightWord';
+import axios from 'axios';
 
 export default {
   components: { ProductList, Pagination, ProductFilter },
@@ -47,10 +48,41 @@ export default {
 
       page: 1,
       productsPerPage: 3,
+      productsData: null,
     };
   },
   methods: {
     getRightWord,
+    loadProducts() {
+      const path = 'https://vue-study.skillbox.cc/api/products';
+      axios
+        .get(path, {
+          params: {
+            page: this.page,
+            limit: this.productsPerPage,
+            categoryId: this.filterCategoryId,
+            minPrice: this.filterPriceFrom,
+            maxPrice: this.filterPriceTo,
+          },
+        })
+        .then((response) => {
+          this.productsData = response.data;
+        });
+    },
+  },
+  watch: {
+    page() {
+      this.loadProducts();
+    },
+    filterPriceFrom() {
+      this.loadProducts();
+    },
+    filterPriceTo() {
+      this.loadProducts();
+    },
+    filterCategoryId() {
+      this.loadProducts();
+    },
   },
   computed: {
     filteredProducts() {
@@ -81,12 +113,21 @@ export default {
 
     products() {
       const offset = (this.page - 1) * this.productsPerPage;
-
       return this.filteredProducts.slice(offset, offset + this.productsPerPage);
+      // return this.productsData
+      //   ? this.productsData.items.map((product) => ({
+      //     ...product,
+      //     image: product.image.file.url,
+      //   }))
+      //   : [];
     },
     countProducts() {
       return this.filteredProducts.length;
+      // return this.productsData ? this.productsData.pagination.total : 0;
     },
+  },
+  created() {
+    this.loadProducts();
   },
 };
 </script>

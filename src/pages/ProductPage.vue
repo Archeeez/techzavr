@@ -127,26 +127,8 @@
             </fieldset> -->
 
             <div class="item__row">
-              <div class="form__counter">
-                <button type="button" aria-label="Убрать один товар"
-                        @click="decrementProductAmount">
-                  <svg width="12" height="12" fill="currentColor">
-                    <use xlink:href="#icon-minus"></use>
-                  </svg>
-                </button>
 
-                <label for="count">
-                  <span style="display: none;">Количество товаров</span>
-                  <input type="text" v-model.number="productAmount" name="count">
-                </label>
-
-                <button type="button" aria-label="Добавить один товар"
-                        @click="incrementProductAmount">
-                  <svg width="12" height="12" fill="currentColor">
-                    <use xlink:href="#icon-plus"></use>
-                  </svg>
-                </button>
-              </div>
+              <ProductAmount :value.sync="productAmount"/>
 
               <button class="button button--primery" type="submit">
                 В корзину
@@ -231,10 +213,12 @@ import products from '@/data/products';
 import categories from '@/data/categories';
 import goToPage from '@/helpers/goToPage';
 import numberFormat from '@/helpers/numberFormat';
+import ProductAmount from '@/components/ProductAmount.vue';
 
 export default {
   props: ['pageParams'],
   filters: { numberFormat },
+  components: { ProductAmount },
   data() {
     return {
       productAmount: 1,
