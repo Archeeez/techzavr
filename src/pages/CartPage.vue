@@ -1,5 +1,14 @@
 <template>
-<main class="content container">
+<main class="content container" v-if="cartLoadingState">
+  <PreloaderAnimation v-if="cartLoadingState"
+                          :fullPage="true"
+                          :centered="true"
+                          :blackout="false" />
+</main>
+<!-- <main class="content container" v-else-if="!cartData || cartLoadingFailed">
+  Не удалось загрузить товар
+</main> -->
+<main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -151,15 +160,23 @@ import numberFormat from '@/helpers/numberFormat';
 import { mapGetters } from 'vuex';
 import CartItem from '@/components/CartItem.vue';
 import getRightWord from '@/helpers/getRightWord';
+import PreloaderAnimation from '@/components/PreloaderAnimation.vue';
 
 export default {
-  components: { CartItem },
+  components: { CartItem, PreloaderAnimation },
   filters: { numberFormat },
+  data() {
+    return {
+      // productAdded: false,
+      // productAddSending: false,
+      // productAddSendingFailed: false,
+    };
+  },
   computed: {
     ...mapGetters({ products: 'cartDetailProducts', totalPrice: 'cartTotalPrice' }),
-    // products() {
-    //   return this.cartDetailProducts;
-    // },
+    cartLoadingState() {
+      return this.$store.state.cartLoading;
+    },
   },
   methods: {
     getRightWord,

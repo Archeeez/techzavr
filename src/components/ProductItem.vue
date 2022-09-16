@@ -14,7 +14,20 @@
       {{ product.price | numberFormat }} ₽
     </span>
 
-    <ul class="colors colors--black" v-if="product.colorsId">
+    <ul class="colors colors--black" v-if="product.colors">
+      <li class="colors__item" v-for="color in product.colors" :key="color.id">
+        <label class="colors__label" :for="`${color.id}-${product.id}`">
+          <input class="colors__radio sr-only"
+                  type="radio"
+                  :id="`${color.id}-${product.id}`"
+                  :value="color.id"
+                  v-model="choosedColorId">
+          <span class="colors__value" :style="`background-color: ${color.code};`">
+          </span>
+        </label>
+      </li>
+    </ul>
+    <!-- <ul class="colors colors--black" v-if="product.colorsId">
       <li class="colors__item" v-for="color in filterColors" :key="color.id">
             <label class="colors__label" :for="`${color.value}-${color.id}-${product.id}`">
               <input class="colors__radio sr-only"
@@ -26,12 +39,11 @@
               </span>
             </label>
           </li>
-    </ul>
+    </ul> -->
 </li>
 </template>
 
 <script>
-import colors from '@/data/colors';
 import goToPage from '@/helpers/goToPage';
 import numberFormat from '@/helpers/numberFormat';
 
@@ -44,13 +56,13 @@ export default {
     };
   },
   computed: {
-    filterColors() {
-      const result = [];
-      this.product.colorsId.forEach((id) => {
-        result.push(colors.find((color) => color.id === id));
-      });
-      return result;
-    },
+    // filterColors() {
+    //   const result = [];
+    //   this.product.colorsId.forEach((id) => {
+    //     result.push(colors.find((color) => color.id === id));
+    //   });
+    //   return result;
+    // },
   },
   methods: {
     goToPage,

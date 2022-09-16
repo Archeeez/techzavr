@@ -116,8 +116,33 @@
 
 <script>
 import CartIndicator from '@/components/CartIndicator.vue';
+import { mapActions, mapMutations } from 'vuex';
 
 export default {
   components: { CartIndicator },
+  created() {
+    const userAccessKey = localStorage.getItem('userAccessKey');
+    if (userAccessKey) {
+      this.updateUserAccessKey(userAccessKey);
+    }
+    this.loadCart();
+  },
+  methods: {
+    ...mapActions(['loadCart']),
+    ...mapMutations(['updateUserAccessKey']),
+  },
 };
 </script>
+
+<style>
+body {
+  overflow-y: scroll;
+}
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: unset;
+  justify-content: space-between;
+  min-height: 100vh;
+}
+</style>

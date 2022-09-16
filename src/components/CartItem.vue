@@ -31,7 +31,7 @@
 
 <script>
 import numberFormat from '@/helpers/numberFormat';
-import { mapMutations } from 'vuex';
+import { mapActions } from 'vuex';
 import ProductAmount from './ProductAmount.vue';
 
 export default {
@@ -44,18 +44,13 @@ export default {
         return this.item.amount;
       },
       set(value) {
-        this.$store.commit('updateCartProductAmount', { productId: this.item.productId, amount: value });
+        this.$store.dispatch('updateCartProductAmount', { productId: this.item.productId, amount: value });
       },
     },
   },
   methods: {
-    ...mapMutations({ deleteProduct: 'deleteCartProduct' }),
-    addProduct() {
-      this.amount += 1;
-    },
-    removeProduct() {
-      if (this.amount > 1) this.amount -= 1;
-    },
+    // ...mapMutations({ deleteProduct: 'deleteCartProduct' }),
+    ...mapActions({ deleteProduct: 'deleteCartProduct' }),
     // deleteProduct(productId) {
     //   this.$store.commit('deleteCartProduct', productId);
     // },

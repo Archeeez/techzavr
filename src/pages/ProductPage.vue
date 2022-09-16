@@ -1,5 +1,14 @@
 <template>
-  <main class="content container">
+  <main class="content container" v-if="productLoading">
+    <PreloaderAnimation v-if="productLoading"
+                            :fullPage="true"
+                            :centered="true"
+                            :blackout="false" />
+  </main>
+  <main class="content container" v-else-if="!productData || productLoadingFailed">
+    Не удалось загрузить товар
+  </main>
+  <main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -22,9 +31,10 @@
 
     <section class="item">
       <div class="item__pics pics">
-        <div class="pics__wrapper">
+        <div class="pics__wrapper" style="width: 570px; height:570px; overflow: hidden;">
           <img width="570" height="570" :src="product.image"
-               srcset="img/phone-square@2x.jpg 2x" alt="Название товара">
+               srcset="img/phone-square@2x.jpg 2x" alt="Название товара"
+               style="object-fit: contain; height: 100%; width: 100%;">
         </div>
         <ul class="pics__list">
           <li class="pics__item">
@@ -65,34 +75,30 @@
               {{product.price | numberFormat }} ₽
             </b>
 
-            <!-- <fieldset class="form__block">
+            <fieldset class="form__block">
               <legend class="form__legend">Цвет:</legend>
               <ul class="colors">
-                <li class="colors__item">
+                <!-- <li class="colors__item">
                   <label class="colors__label">
                     <input class="colors__radio sr-only"
                            type="radio" name="color-item" value="blue" checked="">
                     <span class="colors__value" style="background-color: #73B6EA;">
                     </span>
                   </label>
-                </li>
-                <li class="colors__item">
-                  <label class="colors__label">
+                </li> -->
+                <li class="colors__item" v-for="color in product.colors" :key="color.id">
+                  <label class="colors__label" :for="`${color.id}-${product.id}`">
                     <input class="colors__radio sr-only"
-                           type="radio" name="color-item" value="yellow">
-                    <span class="colors__value" style="background-color: #FFBE15;">
+                            type="radio"
+                            :id="`${color.id}-${product.id}`"
+                            :value="color.id"
+                            v-model="choosedColorId">
+                    <span class="colors__value" :style="`background-color: ${color.code};`">
                     </span>
                   </label>
                 </li>
-                <li class="colors__item">
-                  <label class="colors__label">
-                    <input class="colors__radio sr-only"
-                           type="radio" name="color-item" value="gray">
-                    <span class="colors__value" style="background-color: #939393;">
-                  </span></label>
-                </li>
               </ul>
-            </fieldset> -->
+            </fieldset>
 
             <!-- <fieldset class="form__block">
               <legend class="form__legend">Объемб в ГБ:</legend>
@@ -130,9 +136,18 @@
 
               <ProductAmount :value.sync="productAmount"/>
 
-              <button class="button button--primery" type="submit">
+              <button class="button button--primery" type="submit" :disabled="productAddSending">
                 В корзину
               </button>
+            </div>
+
+            <div style="margin-top: 20px;"
+                 v-show="productAdded">Товар добавлен в корзину</div>
+            <div style="margin-top: 20px;"
+                 v-show="productAddSending">Добавляем товар в корзину...</div>
+            <div style="margin-top: 20px;"
+                 v-show="productAddSendingFailed">
+              При добавлении товара возникла ошибка
             </div>
           </form>
         </div>
@@ -209,44 +224,80 @@
 </template>
 
 <script>
-import products from '@/data/products';
-import categories from '@/data/categories';
+// import products from '@/data/products';
+// import categories from '@/data/categories';
 import goToPage from '@/helpers/goToPage';
 import numberFormat from '@/helpers/numberFormat';
 import ProductAmount from '@/components/ProductAmount.vue';
+import PreloaderAnimation from '@/components/PreloaderAnimation.vue';
+import axios from 'axios';
+import API_BASE_URL from '@/config';
+import { mapActions } from 'vuex';
 
 export default {
   props: ['pageParams'],
   filters: { numberFormat },
-  components: { ProductAmount },
+  components: { ProductAmount, PreloaderAnimation },
   data() {
     return {
       productAmount: 1,
+      productData: null,
+      productLoading: false,
+      productLoadingFailed: false,
+      choosedColorId: 0,
+
+      productAdded: false,
+      productAddSending: false,
+      productAddSendingFailed: false,
     };
   },
   computed: {
     product() {
-      return products.find((product) => product.id === +this.$route.params.id);
+      return this.productData
+        ? { ...this.productData, image: this.productData.image.file.url }
+        : {};
     },
     categories() {
-      return categories.find((category) => category.id === this.product.categoryId);
+      return this.productData.category;
     },
   },
   methods: {
+    ...mapActions(['addProductToCart']),
     goToPage,
     addToCart() {
-      this.$store.commit(
-        'addProductToCard',
-        { productId: this.product.id, amount: this.productAmount },
-      );
+      this.productAdded = false;
+      this.productAddSending = true;
+      this.productAddSendingFailed = false;
+
+      this.addProductToCart({ productId: this.product.id, amount: this.productAmount })
+        .then(() => {
+          this.productAdded = true;
+          this.productAddSending = false;
+        })
+        .catch(() => {
+          this.productAdded = false;
+          this.productAddSending = false;
+          this.productAddSendingFailed = true;
+        });
     },
-    incrementProductAmount() {
-      this.productAmount += 1;
+    loadProduct() {
+      this.productLoading = true;
+      this.productLoadingFailed = false;
+      clearTimeout(this.loadProductTimer);
+      this.loadProductTimer = setTimeout(() => {
+        axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
+          .then((response) => { this.productData = response.data; })
+          .catch(() => { this.productLoadingFailed = true; })
+          .then(() => { this.productLoading = false; });
+      }, 200);
     },
-    decrementProductAmount() {
-      if (this.productAmount > 1) {
-        this.productAmount -= 1;
-      }
+  },
+  watch: {
+    '$route.params.id': {
+      handler() {
+        this.loadProduct();
+      },
+      immediate: true,
     },
   },
 };

@@ -38,13 +38,13 @@
         <legend class="form__legend">Цвет</legend>
         <ul class="colors">
           <li class="colors__item" v-for="color in colors" :key="color.id">
-            <label class="colors__label" :for="`${color.id}-${color.value}`">
+            <label class="colors__label" :for="`${color.id}-${color.id}`">
               <input class="colors__radio sr-only"
                      type="radio"
-                     :id="`${color.id}-${color.value}`"
+                     :id="`${color.id}-${color.id}`"
                      :value="color.id"
                      v-model="currentColorId">
-              <span class="colors__value" :style="`background-color: ${color.value};`">
+              <span class="colors__value" :style="`background-color: ${color.code};`">
               </span>
             </label>
           </li>
@@ -123,8 +123,10 @@
 </template>
 
 <script>
-import categories from '@/data/categories';
-import colors from '@/data/colors';
+// import categories from '@/data/categories';
+// import colors from '@/data/colors';
+import axios from 'axios';
+import API_BASE_URL from '@/config';
 
 export default {
   props: ['priceFrom', 'priceTo', 'categoryId', 'colorId'],
@@ -134,14 +136,21 @@ export default {
       currentPriceTo: 0,
       currentCategoryId: 0,
       currentColorId: 0,
+      categoriesData: null,
+      colorsData: null,
     };
+  },
+  created() {
+    this.loadCategories();
+    this.loadColors();
   },
   computed: {
     categories() {
-      return categories;
+      // return categories;
+      return this.categoriesData ? this.categoriesData.items : [];
     },
     colors() {
-      return colors;
+      return this.colorsData ? this.colorsData.items : [];
     },
     // currentPriceFrom: {
     //   get() {
@@ -179,6 +188,21 @@ export default {
       this.$emit('update:priceTo', 0);
       this.$emit('update:categoryId', 0);
       this.$emit('update:colorId', 0);
+    },
+    loadCategories() {
+      const path = `${API_BASE_URL}/api/productCategories`;
+      axios.get(path)
+        .then((response) => {
+          this.categoriesData = response.data;
+        });
+    },
+    loadColors() {
+      const path = `${API_BASE_URL}/api/colors`;
+      axios.get(path)
+        .then((response) => {
+          console.log(response.data);
+          this.colorsData = response.data;
+        });
     },
   },
 };
