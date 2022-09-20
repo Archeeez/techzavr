@@ -147,7 +147,6 @@ export default {
         : [];
     },
     countProducts() {
-      // return this.filteredProducts.length;
       return this.productsData ? this.productsData.pagination.total : 0;
     },
   },

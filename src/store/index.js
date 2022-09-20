@@ -8,14 +8,12 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    // cartProducts: [
-    //   { productId: 1, amount: 2 },
-    // ],
-    cartProducts: [],
-
     userAccessKey: null,
+    cartProducts: [],
     cartProductData: [],
     cartLoading: false,
+    orderInfo: null,
+    orderInfoLoading: false,
   },
   getters: {
     cartDetailProducts(state) {
@@ -36,20 +34,18 @@ export default new Vuex.Store({
       return getters.cartDetailProducts
         .reduce((acc, item) => (item.product.price * item.amount) + acc, 0);
     },
+    getOrderInfo(state) {
+      return state.orderInfo;
+    },
   },
   mutations: {
-    // addProductToCard(state, { productId, amount }) {
-    //   const item = state.cartProducts.find((el) => el.productId === productId);
-
-    //   if (item) {
-    //     item.amount += amount;
-    //   } else {
-    //     state.cartProducts.push({
-    //       productId,
-    //       amount,
-    //     });
-    //   }
-    // },
+    updateOrderInfo(state, orderInfo) {
+      state.orderInfo = orderInfo;
+    },
+    resetCart(state) {
+      state.cartProducts = [];
+      state.cartProductData = [];
+    },
     updateCartProductAmount(state, { productId, amount }) {
       const item = state.cartProducts.find((el) => el.productId === productId);
 
@@ -75,8 +71,29 @@ export default new Vuex.Store({
     changeCartStateLoading(state, value) {
       state.cartLoading = value;
     },
+    changeOrderInfoStateLoading(state, value) {
+      state.orderInfoLoading = value;
+    },
   },
   actions: {
+    loadOrderInfo(context, orderId) {
+      context.commit('changeOrderInfoStateLoading', true);
+
+      return setTimeout(() => {
+        axios
+          .get(`${API_BASE_URL}/api/orders/${orderId}`, {
+            params: {
+              userAccessKey: context.state.userAccessKey,
+            },
+          })
+          .then((response) => {
+            context.commit('updateOrderInfo', response.data);
+          })
+          .then(() => {
+            context.commit('changeOrderInfoStateLoading', false);
+          });
+      }, 200);
+    },
     loadCart(context) {
       context.commit('changeCartStateLoading', true);
       return setTimeout(() => {
